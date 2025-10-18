@@ -13,6 +13,7 @@ class SubscriptionManager {
         this.bindEvents();
         this.render();
         this.updateStats();
+        this.checkForUpdates();
     }
 
     bindEvents() {
@@ -574,6 +575,30 @@ class SubscriptionManager {
         }
         
         return true;
+    }
+
+    // 업데이트 확인
+    checkForUpdates() {
+        // Service Worker 업데이트 확인
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration) {
+                    registration.update();
+                }
+            });
+        }
+        
+        // 캐시 클리어 (개발 중)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('개발 환경: 캐시 클리어');
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+        }
     }
 
     // 알림 표시

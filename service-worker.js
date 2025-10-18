@@ -1,5 +1,5 @@
 // PWA Service Worker
-const CACHE_NAME = 'expense-manager-v1.0.0';
+const CACHE_NAME = 'expense-manager-v1.1.0';
 const urlsToCache = [
   './',
   './index.html',
