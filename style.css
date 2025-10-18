@@ -697,6 +697,16 @@ body {
         font-size: 0.8rem;
         padding: 6px 12px;
     }
+    
+    /* 모바일에서 탭 버튼 폰트 크기 조정 */
+    .tab-btn {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+    }
+    
+    .tab-btn i {
+        font-size: 1rem;
+    }
 }
 
 /* 수동 설치 안내 스타일 */
