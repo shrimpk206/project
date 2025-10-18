@@ -698,14 +698,27 @@ body {
         padding: 6px 12px;
     }
     
-    /* 모바일에서 탭 버튼 폰트 크기 조정 */
+    /* 모바일에서 탭 버튼 한 줄 표시 */
+    .expense-tabs {
+        flex-wrap: nowrap;
+        gap: 5px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .tab-btn {
-        font-size: 0.9rem;
-        padding: 10px 20px;
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        min-width: auto;
     }
     
     .tab-btn i {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-right: 4px;
     }
 }
 
