@@ -39,6 +39,25 @@ class SubscriptionManager {
                 this.closeModal();
             }
         });
+        
+        // 날짜 유효성 검사 이벤트
+        document.getElementById('serviceStartDate').addEventListener('change', () => this.validateDates());
+        document.getElementById('serviceEndDate').addEventListener('change', () => this.validateDates());
+    }
+
+    // 날짜 유효성 검사
+    validateDates() {
+        const startDate = document.getElementById('serviceStartDate').value;
+        const endDate = document.getElementById('serviceEndDate').value;
+        const endDateInput = document.getElementById('serviceEndDate');
+        
+        if (endDate && startDate && endDate < startDate) {
+            endDateInput.setCustomValidity('구독 종료일은 시작일보다 이후여야 합니다.');
+            endDateInput.style.borderColor = '#e53e3e';
+        } else {
+            endDateInput.setCustomValidity('');
+            endDateInput.style.borderColor = '#e2e8f0';
+        }
     }
 
     // 로컬 스토리지에서 데이터 로드
@@ -56,6 +75,15 @@ class SubscriptionManager {
     handleSubmit(e) {
         e.preventDefault();
         
+        const startDate = document.getElementById('serviceStartDate').value;
+        const endDate = document.getElementById('serviceEndDate').value;
+        
+        // 종료일 유효성 검사
+        if (endDate && endDate < startDate) {
+            alert('구독 종료일은 시작일보다 이후여야 합니다.');
+            return;
+        }
+        
         const formData = {
             id: this.currentEditId || Date.now().toString(),
             name: document.getElementById('serviceName').value,
@@ -64,7 +92,8 @@ class SubscriptionManager {
             currency: document.getElementById('serviceCurrency').value,
             price: parseFloat(document.getElementById('servicePrice').value),
             billingCycle: document.getElementById('serviceBillingCycle').value,
-            startDate: document.getElementById('serviceStartDate').value,
+            startDate: startDate,
+            endDate: endDate || null,
             description: document.getElementById('serviceDescription').value
         };
 
@@ -126,6 +155,7 @@ class SubscriptionManager {
         document.getElementById('servicePrice').value = service.price;
         document.getElementById('serviceBillingCycle').value = service.billingCycle;
         document.getElementById('serviceStartDate').value = service.startDate;
+        document.getElementById('serviceEndDate').value = service.endDate || '';
         document.getElementById('serviceDescription').value = service.description || '';
     }
 
@@ -176,9 +206,14 @@ class SubscriptionManager {
         const yearlyPrice = service.billingCycle === 'monthly' ? service.price * 12 : service.price;
         
         const startDate = new Date(service.startDate);
+        const endDate = service.endDate ? new Date(service.endDate) : null;
         const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
         const expenseType = service.expenseType || 'personal';
         const currency = service.currency || 'KRW';
+        
+        // 구독 상태 확인
+        const isExpired = endDate && new Date() > endDate;
+        const isExpiringSoon = endDate && (endDate - new Date()) <= (30 * 24 * 60 * 60 * 1000) && !isExpired;
         
         // 원화로 변환된 가격 계산
         const monthlyPriceKRW = this.convertCurrency(monthlyPrice, currency, 'KRW');
@@ -193,7 +228,7 @@ class SubscriptionManager {
         const displayYearlyPrice = currency === 'USD' ? yearlyPriceUSD : yearlyPrice;
         
         return `
-            <div class="service-card">
+            <div class="service-card ${isExpired ? 'expired' : ''} ${isExpiringSoon ? 'expiring-soon' : ''}">
                 <div class="service-header">
                     <div>
                         <div class="service-name">
@@ -201,6 +236,8 @@ class SubscriptionManager {
                             <span class="expense-type-tag expense-type-${expenseType}">
                                 ${expenseType === 'personal' ? '개인' : '회사'}
                             </span>
+                            ${isExpired ? '<span class="status-tag expired">만료됨</span>' : ''}
+                            ${isExpiringSoon ? '<span class="status-tag expiring-soon">만료 예정</span>' : ''}
                         </div>
                         <span class="service-category category-${service.category}">${this.getCategoryName(service.category)}</span>
                     </div>
@@ -224,6 +261,19 @@ class SubscriptionManager {
                         <span class="service-detail-label">구독 기간</span>
                         <span class="service-detail-value">${daysSinceStart}일</span>
                     </div>
+                    ${endDate ? `
+                    <div class="service-detail">
+                        <span class="service-detail-label">구독 종료일</span>
+                        <span class="service-detail-value ${isExpired ? 'expired' : ''} ${isExpiringSoon ? 'expiring-soon' : ''}">
+                            ${endDate.toLocaleDateString('ko-KR')}
+                        </span>
+                    </div>
+                    ` : `
+                    <div class="service-detail">
+                        <span class="service-detail-label">구독 상태</span>
+                        <span class="service-detail-value">무기한</span>
+                    </div>
+                    `}
                     ${currency !== 'KRW' ? `
                     <div class="service-detail">
                         <span class="service-detail-label">원화 환산 (월)</span>
@@ -431,10 +481,121 @@ class SubscriptionManager {
 
 // 페이지 로드 시 구독 관리자 초기화
 let subscriptionManager;
+let deferredPrompt;
 
 document.addEventListener('DOMContentLoaded', () => {
     subscriptionManager = new SubscriptionManager();
+    registerServiceWorker();
+    setupInstallPrompt();
 });
+
+// PWA 서비스 워커 등록
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((registration) => {
+                    console.log('SW 등록 성공: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW 등록 실패: ', registrationError);
+                });
+        });
+    }
+}
+
+// PWA 설치 프롬프트 설정
+function setupInstallPrompt() {
+    // 설치 가능한 이벤트 감지
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // 기본 설치 프롬프트 방지
+        e.preventDefault();
+        // 이벤트 저장
+        deferredPrompt = e;
+        
+        // 설치 버튼 표시
+        showInstallButton();
+    });
+    
+    // 앱이 설치되었을 때
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA가 설치되었습니다');
+        hideInstallButton();
+        deferredPrompt = null;
+    });
+}
+
+// 설치 버튼 표시
+function showInstallButton() {
+    // 기존 설치 버튼이 있으면 제거
+    const existingBtn = document.getElementById('installBtn');
+    if (existingBtn) {
+        existingBtn.remove();
+    }
+    
+    // 설치 버튼 생성
+    const installBtn = document.createElement('button');
+    installBtn.id = 'installBtn';
+    installBtn.className = 'btn btn-primary install-btn';
+    installBtn.innerHTML = '<i class="fas fa-download"></i> 앱 설치';
+    
+    // 버튼 클릭 이벤트
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // 설치 프롬프트 표시
+            deferredPrompt.prompt();
+            
+            // 사용자 선택 결과 확인
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`사용자 선택: ${outcome}`);
+            
+            // 프롬프트 초기화
+            deferredPrompt = null;
+            hideInstallButton();
+        }
+    });
+    
+    // 컨트롤 영역에 버튼 추가
+    const controls = document.querySelector('.controls');
+    controls.appendChild(installBtn);
+}
+
+// 설치 버튼 숨기기
+function hideInstallButton() {
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.remove();
+    }
+}
+
+// 오프라인 상태 감지
+window.addEventListener('online', () => {
+    console.log('온라인 상태');
+    showOnlineStatus();
+});
+
+window.addEventListener('offline', () => {
+    console.log('오프라인 상태');
+    showOfflineStatus();
+});
+
+// 온라인 상태 표시
+function showOnlineStatus() {
+    const status = document.getElementById('connectionStatus');
+    if (status) {
+        status.textContent = '온라인';
+        status.className = 'connection-status online';
+    }
+}
+
+// 오프라인 상태 표시
+function showOfflineStatus() {
+    const status = document.getElementById('connectionStatus');
+    if (status) {
+        status.textContent = '오프라인';
+        status.className = 'connection-status offline';
+    }
+}
 
 // 키보드 단축키
 document.addEventListener('keydown', (e) => {
