@@ -43,6 +43,11 @@ class SubscriptionManager {
         // 날짜 유효성 검사 이벤트
         document.getElementById('serviceStartDate').addEventListener('change', () => this.validateDates());
         document.getElementById('serviceEndDate').addEventListener('change', () => this.validateDates());
+        
+        // 데이터 내보내기/가져오기 이벤트
+        document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
+        document.getElementById('importBtn').addEventListener('click', () => this.triggerImport());
+        document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
     }
 
     // 날짜 유효성 검사
@@ -476,6 +481,126 @@ class SubscriptionManager {
             'other': '기타'
         };
         return categoryNames[category] || '기타';
+    }
+
+    // 데이터 내보내기
+    exportData() {
+        try {
+            const exportData = {
+                version: '1.0.0',
+                exportDate: new Date().toISOString(),
+                subscriptions: this.subscriptions,
+                totalCount: this.subscriptions.length
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `구독관리_백업_${new Date().toISOString().split('T')[0]}.json`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('데이터가 성공적으로 내보내졌습니다!', 'success');
+        } catch (error) {
+            console.error('내보내기 오류:', error);
+            this.showNotification('내보내기 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
+    // 가져오기 트리거
+    triggerImport() {
+        document.getElementById('importFile').click();
+    }
+
+    // 데이터 가져오기
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 데이터 유효성 검사
+                if (!this.validateImportData(importedData)) {
+                    this.showNotification('잘못된 파일 형식입니다.', 'error');
+                    return;
+                }
+
+                // 기존 데이터 덮어쓰기 확인
+                if (this.subscriptions.length > 0) {
+                    if (!confirm(`기존 데이터 ${this.subscriptions.length}개가 모두 삭제되고 새 데이터로 교체됩니다. 계속하시겠습니까?`)) {
+                        return;
+                    }
+                }
+
+                // 데이터 가져오기
+                this.subscriptions = importedData.subscriptions || [];
+                this.saveToStorage();
+                this.render();
+                this.updateStats();
+                
+                this.showNotification(`${importedData.subscriptions.length}개의 구독 데이터를 성공적으로 가져왔습니다!`, 'success');
+                
+            } catch (error) {
+                console.error('가져오기 오류:', error);
+                this.showNotification('파일을 읽는 중 오류가 발생했습니다.', 'error');
+            }
+        };
+        
+        reader.readAsText(file);
+        
+        // 파일 입력 초기화
+        event.target.value = '';
+    }
+
+    // 가져오기 데이터 유효성 검사
+    validateImportData(data) {
+        if (!data || typeof data !== 'object') return false;
+        if (!Array.isArray(data.subscriptions)) return false;
+        
+        // 각 구독 항목 검사
+        for (const subscription of data.subscriptions) {
+            if (!subscription.id || !subscription.name || !subscription.price) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    // 알림 표시
+    showNotification(message, type = 'info') {
+        // 기존 알림 제거
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 3초 후 자동 제거
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
     }
 }
 

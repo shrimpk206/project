@@ -121,9 +121,20 @@
         </header>
 
         <div class="controls">
-            <button class="btn btn-primary" id="addServiceBtn">
-                <i class="fas fa-plus"></i> 새 구독 추가
-            </button>
+            <div class="main-controls">
+                <button class="btn btn-primary" id="addServiceBtn">
+                    <i class="fas fa-plus"></i> 새 구독 추가
+                </button>
+                <div class="data-controls">
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <i class="fas fa-download"></i> 내보내기
+                    </button>
+                    <button class="btn btn-secondary" id="importBtn">
+                        <i class="fas fa-upload"></i> 가져오기
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
             <div class="filter-controls">
                 <select id="categoryFilter">
                     <option value="">모든 카테고리</option>
