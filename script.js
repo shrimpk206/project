@@ -529,60 +529,12 @@ function setupInstallPrompt() {
         deferredPrompt = null;
     });
     
-    // 모바일에서 수동 설치 안내 표시
-    setTimeout(() => {
-        console.log('설치 프롬프트 확인:', !!deferredPrompt);
-        if (!deferredPrompt && isMobile()) {
-            console.log('수동 설치 안내 표시');
-            showManualInstallGuide();
-        }
-    }, 3000);
+    // 자동 설치 안내는 제거
 }
 
-// 모바일 환경 감지
+// 모바일 환경 감지 (필요시 사용)
 function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-// 수동 설치 안내 표시
-function showManualInstallGuide() {
-    const existingGuide = document.getElementById('manualInstallGuide');
-    if (existingGuide) return;
-    
-    const guide = document.createElement('div');
-    guide.id = 'manualInstallGuide';
-    guide.className = 'manual-install-guide';
-    guide.innerHTML = `
-        <div class="guide-content">
-            <h3><i class="fas fa-mobile-alt"></i> 앱 설치하기</h3>
-            <p>이 앱을 홈 화면에 추가하여 더 편리하게 사용하세요!</p>
-            <div class="install-steps">
-                <div class="step">
-                    <span class="step-number">1</span>
-                    <span>하단 공유 버튼 <i class="fas fa-share"></i> 터치</span>
-                </div>
-                <div class="step">
-                    <span class="step-number">2</span>
-                    <span>"홈 화면에 추가" 선택</span>
-                </div>
-                <div class="step">
-                    <span class="step-number">3</span>
-                    <span>"추가" 버튼 터치</span>
-                </div>
-            </div>
-            <button class="btn btn-secondary" onclick="hideManualInstallGuide()">닫기</button>
-        </div>
-    `;
-    
-    document.body.appendChild(guide);
-}
-
-// 수동 설치 안내 숨기기
-function hideManualInstallGuide() {
-    const guide = document.getElementById('manualInstallGuide');
-    if (guide) {
-        guide.remove();
-    }
 }
 
 // 설치 버튼 표시
