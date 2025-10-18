@@ -2,12 +2,12 @@
   "name": "월간 고정 지출 관리",
   "short_name": "고정지출관리",
   "description": "월간 고정 지출을 효율적으로 관리하는 앱",
-  "start_url": "/",
+  "start_url": "/project/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/project/",
   "lang": "ko",
   "icons": [
     {

@@ -10,6 +10,9 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
 
+// GitHub Pages 경로에 맞게 캐시 키 수정
+const CACHE_PREFIX = '/project';
+
 // 설치 이벤트
 self.addEventListener('install', (event) => {
   event.waitUntil(
