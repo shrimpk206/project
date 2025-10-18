@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구독 서비스 관리자</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-credit-card"></i> 구독 서비스 관리자</h1>
+            <!-- 전체 통계 -->
+            <div class="stats-section" id="allStats">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">총 구독</span>
+                        <span class="stat-value" id="totalSubscriptions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">개인 월간 (원)</span>
+                        <span class="stat-value" id="personalMonthlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">개인 월간 ($)</span>
+                        <span class="stat-value" id="personalMonthlyCostUSD">$0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">회사 월간 (원)</span>
+                        <span class="stat-value" id="companyMonthlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">회사 월간 ($)</span>
+                        <span class="stat-value" id="companyMonthlyCostUSD">$0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">총 월간 (원)</span>
+                        <span class="stat-value" id="totalMonthlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">총 월간 ($)</span>
+                        <span class="stat-value" id="totalMonthlyCostUSD">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 개인 지출 통계 -->
+            <div class="stats-section" id="personalStats" style="display: none;">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">개인 구독</span>
+                        <span class="stat-value" id="personalTotalSubscriptions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">월간 (원)</span>
+                        <span class="stat-value" id="personalOnlyMonthlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">월간 ($)</span>
+                        <span class="stat-value" id="personalOnlyMonthlyCostUSD">$0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">연간 (원)</span>
+                        <span class="stat-value" id="personalOnlyYearlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">연간 ($)</span>
+                        <span class="stat-value" id="personalOnlyYearlyCostUSD">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 회사 지출 통계 -->
+            <div class="stats-section" id="companyStats" style="display: none;">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">회사 구독</span>
+                        <span class="stat-value" id="companyTotalSubscriptions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">월간 (원)</span>
+                        <span class="stat-value" id="companyOnlyMonthlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">월간 ($)</span>
+                        <span class="stat-value" id="companyOnlyMonthlyCostUSD">$0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">연간 (원)</span>
+                        <span class="stat-value" id="companyOnlyYearlyCostKRW">₩0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">연간 ($)</span>
+                        <span class="stat-value" id="companyOnlyYearlyCostUSD">$0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="addServiceBtn">
+                <i class="fas fa-plus"></i> 새 구독 추가
+            </button>
+            <div class="filter-controls">
+                <select id="categoryFilter">
+                    <option value="">모든 카테고리</option>
+                    <option value="streaming">스트리밍</option>
+                    <option value="music">음악</option>
+                    <option value="software">소프트웨어</option>
+                    <option value="shopping">쇼핑</option>
+                    <option value="fitness">피트니스</option>
+                    <option value="other">기타</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="서비스 검색...">
+            </div>
+        </div>
+
+        <!-- 지출 유형 탭 -->
+        <div class="expense-tabs">
+            <button class="tab-btn active" data-tab="all">
+                <i class="fas fa-list"></i> 전체
+            </button>
+            <button class="tab-btn" data-tab="personal">
+                <i class="fas fa-user"></i> 개인 지출
+            </button>
+            <button class="tab-btn" data-tab="company">
+                <i class="fas fa-building"></i> 회사 지출
+            </button>
+        </div>
+
+        <div class="services-grid" id="servicesGrid">
+            <!-- 구독 서비스들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 구독 서비스 추가/편집 모달 -->
+        <div class="modal" id="serviceModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">새 구독 추가</h2>
+                    <button class="close-btn" id="closeModal">&times;</button>
+                </div>
+                <form id="serviceForm">
+                    <div class="form-group">
+                        <label for="serviceName">서비스 이름</label>
+                        <input type="text" id="serviceName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceExpenseType">지출 유형</label>
+                        <select id="serviceExpenseType" required>
+                            <option value="personal">개인 지출</option>
+                            <option value="company">회사 지출</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceCategory">카테고리</label>
+                        <select id="serviceCategory" required>
+                            <option value="streaming">스트리밍</option>
+                            <option value="music">음악</option>
+                            <option value="software">소프트웨어</option>
+                            <option value="shopping">쇼핑</option>
+                            <option value="fitness">피트니스</option>
+                            <option value="other">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceCurrency">통화</label>
+                        <select id="serviceCurrency" required>
+                            <option value="KRW">원 (₩)</option>
+                            <option value="USD">달러 ($)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="servicePrice">월간 가격</label>
+                        <input type="number" id="servicePrice" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceBillingCycle">결제 주기</label>
+                        <select id="serviceBillingCycle" required>
+                            <option value="monthly">월간</option>
+                            <option value="yearly">연간</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceStartDate">구독 시작일</label>
+                        <input type="date" id="serviceStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceDescription">설명 (선택사항)</label>
+                        <textarea id="serviceDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">취소</button>
+                        <button type="submit" class="btn btn-primary">저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
