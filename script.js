@@ -629,32 +629,23 @@ function registerServiceWorker() {
     }
 }
 
-// PWA 설치 프롬프트 설정
+// PWA 설치 프롬프트 설정 (자동 설치만 지원)
 function setupInstallPrompt() {
     console.log('PWA 설치 프롬프트 설정 시작');
     console.log('User Agent:', navigator.userAgent);
     console.log('isMobile:', isMobile());
     
-    // 설치 가능한 이벤트 감지
+    // 설치 가능한 이벤트 감지 (자동 설치만)
     window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('beforeinstallprompt 이벤트 발생');
-        // 기본 설치 프롬프트 방지
-        e.preventDefault();
-        // 이벤트 저장
-        deferredPrompt = e;
-        
-        // 설치 버튼 표시
-        showInstallButton();
+        console.log('beforeinstallprompt 이벤트 발생 - 자동 설치만 지원');
+        // 기본 설치 프롬프트 허용 (자동 설치)
+        // e.preventDefault() 제거
     });
     
     // 앱이 설치되었을 때
     window.addEventListener('appinstalled', () => {
         console.log('PWA가 설치되었습니다');
-        hideInstallButton();
-        deferredPrompt = null;
     });
-    
-    // 자동 설치 안내는 제거
 }
 
 // 모바일 환경 감지 (필요시 사용)
@@ -662,48 +653,7 @@ function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-// 설치 버튼 표시
-function showInstallButton() {
-    // 기존 설치 버튼이 있으면 제거
-    const existingBtn = document.getElementById('installBtn');
-    if (existingBtn) {
-        existingBtn.remove();
-    }
-    
-    // 설치 버튼 생성
-    const installBtn = document.createElement('button');
-    installBtn.id = 'installBtn';
-    installBtn.className = 'btn btn-primary install-btn';
-    installBtn.innerHTML = '<i class="fas fa-download"></i> 앱 설치';
-    
-    // 버튼 클릭 이벤트
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            // 설치 프롬프트 표시
-            deferredPrompt.prompt();
-            
-            // 사용자 선택 결과 확인
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`사용자 선택: ${outcome}`);
-            
-            // 프롬프트 초기화
-            deferredPrompt = null;
-            hideInstallButton();
-        }
-    });
-    
-    // 컨트롤 영역에 버튼 추가
-    const controls = document.querySelector('.controls');
-    controls.appendChild(installBtn);
-}
-
-// 설치 버튼 숨기기
-function hideInstallButton() {
-    const installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.remove();
-    }
-}
+// PWA 설치 관련 함수들은 제거 (자동 설치만 지원)
 
 // 오프라인 상태 감지
 window.addEventListener('online', () => {
