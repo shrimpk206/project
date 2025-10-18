@@ -699,6 +699,83 @@ body {
     }
 }
 
+/* 수동 설치 안내 스타일 */
+.manual-install-guide {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.guide-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.guide-content h3 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.guide-content p {
+    color: #718096;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.install-steps {
+    margin-bottom: 25px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f7fafc;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.step span:last-child {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.step i {
+    color: #667eea;
+    margin: 0 5px;
+}
+
 /* PWA 스플래시 스크린 스타일 */
 @media (display-mode: standalone) {
     body {
