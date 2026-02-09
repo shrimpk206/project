@@ -1,5 +1,5 @@
 // PWA Service Worker
-const CACHE_NAME = 'expense-manager-v1.1.0';
+const CACHE_NAME = 'expense-manager-v1.2.0';
 const urlsToCache = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting();
 });
 
 // 활성화 이벤트
@@ -38,40 +39,58 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  self.clients.claim();
 });
 
 // 페치 이벤트 (네트워크 요청 가로채기)
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  const isNavigation = request.mode === 'navigate';
+  const isCriticalAsset = request.destination === 'style' || request.destination === 'script';
+
+  if (isNavigation || isCriticalAsset) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            if (cached) return cached;
+            if (isNavigation) {
+              return caches.match('./index.html');
+            }
+          });
+        })
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // 캐시에 있으면 캐시에서 반환
-        if (response) {
+    caches.match(request).then((response) => {
+      if (response) {
+        return response;
+      }
+
+      return fetch(request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
-        
-        // 캐시에 없으면 네트워크에서 가져오기
-        return fetch(event.request).then((response) => {
-          // 유효하지 않은 응답인지 확인
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
 
-          // 응답을 복제하여 캐시에 저장
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        }).catch(() => {
-          // 네트워크 오류 시 오프라인 페이지 반환 (선택사항)
-          if (event.request.destination === 'document') {
-            return caches.match('/index.html');
-          }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(request, responseToCache);
         });
-      })
+
+        return response;
+      });
+    })
   );
 });
 
