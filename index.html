@@ -29,41 +29,50 @@
     <!-- 스타일시트 -->
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1><i class="fas fa-credit-card"></i> 월간 고정 지출 관리</h1>
+            <div class="header-top">
+                <div class="title-block">
+                    <p class="eyebrow">Monthly Fixed Expense</p>
+                    <h1><i class="fas fa-credit-card"></i> 월간 고정 지출 관리</h1>
+                    <p class="subtitle">개인/회사 구독을 한눈에 정리하고 월간 지출 흐름을 명확하게 확인하세요.</p>
+                </div>
+            </div>
             <!-- 전체 통계 -->
             <div class="stats-section" id="allStats">
                 <div class="stats">
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">총 구독</span>
                         <span class="stat-value" id="totalSubscriptions">0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">총 월간 (원)</span>
                         <span class="stat-value" id="totalMonthlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">총 월간 ($)</span>
                         <span class="stat-value" id="totalMonthlyCostUSD">$0</span>
                     </div>
                 </div>
                 <div class="stats">
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">개인 월간 (원)</span>
                         <span class="stat-value" id="personalMonthlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">개인 월간 ($)</span>
                         <span class="stat-value" id="personalMonthlyCostUSD">$0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">회사 월간 (원)</span>
                         <span class="stat-value" id="companyMonthlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">회사 월간 ($)</span>
                         <span class="stat-value" id="companyMonthlyCostUSD">$0</span>
                     </div>
@@ -73,23 +82,23 @@
             <!-- 개인 지출 통계 -->
             <div class="stats-section" id="personalStats" style="display: none;">
                 <div class="stats">
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">개인 구독</span>
                         <span class="stat-value" id="personalTotalSubscriptions">0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">월간 (원)</span>
                         <span class="stat-value" id="personalOnlyMonthlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">월간 ($)</span>
                         <span class="stat-value" id="personalOnlyMonthlyCostUSD">$0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">연간 (원)</span>
                         <span class="stat-value" id="personalOnlyYearlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">연간 ($)</span>
                         <span class="stat-value" id="personalOnlyYearlyCostUSD">$0</span>
                     </div>
@@ -99,23 +108,23 @@
             <!-- 회사 지출 통계 -->
             <div class="stats-section" id="companyStats" style="display: none;">
                 <div class="stats">
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">회사 구독</span>
                         <span class="stat-value" id="companyTotalSubscriptions">0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">월간 (원)</span>
                         <span class="stat-value" id="companyOnlyMonthlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">월간 ($)</span>
                         <span class="stat-value" id="companyOnlyMonthlyCostUSD">$0</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item stat-card">
                         <span class="stat-label">연간 (원)</span>
                         <span class="stat-value" id="companyOnlyYearlyCostKRW">₩0</span>
                     </div>
-                    <div class="stat-item" style="display: none;">
+                    <div class="stat-item stat-card" style="display: none;">
                         <span class="stat-label">연간 ($)</span>
                         <span class="stat-value" id="companyOnlyYearlyCostUSD">$0</span>
                     </div>

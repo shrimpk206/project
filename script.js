@@ -49,6 +49,20 @@ class SubscriptionManager {
         document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
         document.getElementById('importBtn').addEventListener('click', () => this.triggerImport());
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
+
+        // 상세 토글 이벤트 (서비스 카드)
+        document.getElementById('servicesGrid').addEventListener('click', (e) => {
+            const toggleBtn = e.target.closest('.details-toggle');
+            if (!toggleBtn) return;
+            const card = toggleBtn.closest('.service-card');
+            const details = card.querySelector('.service-details-collapsible');
+            const isExpanded = card.classList.toggle('is-expanded');
+            toggleBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            if (details) {
+                details.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+                details.style.maxHeight = isExpanded ? `${details.scrollHeight}px` : '0px';
+            }
+        });
     }
 
     // 날짜 유효성 검사
@@ -192,6 +206,7 @@ class SubscriptionManager {
         }
 
         grid.innerHTML = filteredServices.map(service => this.createServiceCard(service)).join('');
+        this.syncDetailsHeights();
     }
 
     // 환율 변환 함수
@@ -247,59 +262,76 @@ class SubscriptionManager {
                         </div>
                         <span class="service-category category-${service.category}">${this.getCategoryName(service.category)}</span>
                     </div>
+                    <button class="details-toggle" type="button" aria-expanded="false" aria-label="상세 보기 토글">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
                 
                 <div class="service-price">
                     ${currencySymbol}${displayPrice.toLocaleString(undefined, {maximumFractionDigits: 2})}/월
                     <span class="currency-tag currency-${currency.toLowerCase()}">${currency}</span>
                 </div>
-                
-                <div class="service-details">
-                    <div class="service-detail">
-                        <span class="service-detail-label">연간 비용</span>
-                        <span class="service-detail-value">${currencySymbol}${displayYearlyPrice.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+
+                <div class="service-details-collapsible" aria-hidden="true">
+                    <div class="service-details">
+                        <div class="service-detail">
+                            <span class="service-detail-label">연간 비용</span>
+                            <span class="service-detail-value">${currencySymbol}${displayYearlyPrice.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                        </div>
+                        <div class="service-detail">
+                            <span class="service-detail-label">결제 주기</span>
+                            <span class="service-detail-value">${service.billingCycle === 'monthly' ? '월간' : '연간'}</span>
+                        </div>
+                        <div class="service-detail">
+                            <span class="service-detail-label">구독 기간</span>
+                            <span class="service-detail-value">${daysSinceStart}일</span>
+                        </div>
+                        ${endDate ? `
+                        <div class="service-detail">
+                            <span class="service-detail-label">구독 종료일</span>
+                            <span class="service-detail-value ${isExpired ? 'expired' : ''} ${isExpiringSoon ? 'expiring-soon' : ''}">
+                                ${endDate.toLocaleDateString('ko-KR')}
+                            </span>
+                        </div>
+                        ` : `
+                        <div class="service-detail">
+                            <span class="service-detail-label">구독 상태</span>
+                            <span class="service-detail-value">무기한</span>
+                        </div>
+                        `}
+                        ${currency !== 'KRW' ? `
+                        <div class="service-detail">
+                            <span class="service-detail-label">원화 환산 (월)</span>
+                            <span class="service-detail-value">₩${Math.round(monthlyPriceKRW).toLocaleString()}</span>
+                        </div>
+                        ` : ''}
                     </div>
-                    <div class="service-detail">
-                        <span class="service-detail-label">결제 주기</span>
-                        <span class="service-detail-value">${service.billingCycle === 'monthly' ? '월간' : '연간'}</span>
+                    
+                    ${service.description ? `<div class="service-description">${service.description}</div>` : ''}
+                    
+                    <div class="service-actions">
+                        <button class="btn btn-primary btn-small" onclick="subscriptionManager.openModal('${service.id}')">
+                            <i class="fas fa-edit"></i> 편집
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="subscriptionManager.deleteService('${service.id}')">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
                     </div>
-                    <div class="service-detail">
-                        <span class="service-detail-label">구독 기간</span>
-                        <span class="service-detail-value">${daysSinceStart}일</span>
-                    </div>
-                    ${endDate ? `
-                    <div class="service-detail">
-                        <span class="service-detail-label">구독 종료일</span>
-                        <span class="service-detail-value ${isExpired ? 'expired' : ''} ${isExpiringSoon ? 'expiring-soon' : ''}">
-                            ${endDate.toLocaleDateString('ko-KR')}
-                        </span>
-                    </div>
-                    ` : `
-                    <div class="service-detail">
-                        <span class="service-detail-label">구독 상태</span>
-                        <span class="service-detail-value">무기한</span>
-                    </div>
-                    `}
-                    ${currency !== 'KRW' ? `
-                    <div class="service-detail">
-                        <span class="service-detail-label">원화 환산 (월)</span>
-                        <span class="service-detail-value">₩${Math.round(monthlyPriceKRW).toLocaleString()}</span>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                ${service.description ? `<div class="service-description">${service.description}</div>` : ''}
-                
-                <div class="service-actions">
-                    <button class="btn btn-primary btn-small" onclick="subscriptionManager.openModal('${service.id}')">
-                        <i class="fas fa-edit"></i> 편집
-                    </button>
-                    <button class="btn btn-danger btn-small" onclick="subscriptionManager.deleteService('${service.id}')">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
                 </div>
             </div>
         `;
+    }
+
+    // 상세영역 높이 동기화 (재렌더 시)
+    syncDetailsHeights() {
+        document.querySelectorAll('.service-card').forEach(card => {
+            const details = card.querySelector('.service-details-collapsible');
+            const toggleBtn = card.querySelector('.details-toggle');
+            if (!details || !toggleBtn) return;
+            details.style.maxHeight = '0px';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            details.setAttribute('aria-hidden', 'true');
+        });
     }
 
     // 탭 전환
