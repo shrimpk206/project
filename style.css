@@ -579,8 +579,23 @@ body::before {
         padding: 12px;
     }
     
+    .eyebrow {
+        font-size: 0.55rem;
+        letter-spacing: 0.2em;
+    }
+    
     .header h1 {
-        font-size: 1.7rem;
+        font-size: 1.1rem;
+    }
+    
+    .header h1 i {
+        margin-right: 6px;
+        font-size: 1rem;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem;
+        line-height: 1.4;
     }
     
     .stats {
