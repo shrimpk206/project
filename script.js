@@ -4,7 +4,8 @@ class SubscriptionManager {
     constructor() {
         this.subscriptions = this.loadFromStorage();
         this.currentEditId = null;
-        this.exchangeRate = 1423.50; // 실시간 환율 (1 USD = 1423.50 KRW) - 네이버 증권 기준
+        this.exchangeRate = this.loadExchangeRate() || 1423.50; // USD -> KRW 환율 (기본값)
+        this.exchangeRateUpdatedAt = this.loadExchangeRateUpdatedAt();
         this.currentTab = 'all'; // 현재 활성 탭
         this.init();
     }
@@ -13,6 +14,8 @@ class SubscriptionManager {
         this.bindEvents();
         this.render();
         this.updateStats();
+        this.updateExchangeRate();
+        this.startExchangeRatePolling();
         this.checkForUpdates();
     }
 
@@ -86,9 +89,51 @@ class SubscriptionManager {
         return stored ? JSON.parse(stored) : [];
     }
 
+    // 환율 로드/저장
+    loadExchangeRate() {
+        const stored = localStorage.getItem('exchangeRateKRW');
+        return stored ? parseFloat(stored) : null;
+    }
+
+    loadExchangeRateUpdatedAt() {
+        return localStorage.getItem('exchangeRateUpdatedAt');
+    }
+
+    saveExchangeRate(rate) {
+        localStorage.setItem('exchangeRateKRW', String(rate));
+        localStorage.setItem('exchangeRateUpdatedAt', new Date().toISOString());
+        this.exchangeRateUpdatedAt = localStorage.getItem('exchangeRateUpdatedAt');
+    }
+
     // 로컬 스토리지에 데이터 저장
     saveToStorage() {
         localStorage.setItem('subscriptions', JSON.stringify(this.subscriptions));
+    }
+
+    // 환율 업데이트
+    async updateExchangeRate() {
+        try {
+            const response = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('환율 요청 실패');
+            }
+            const data = await response.json();
+            const rate = data && data.rates ? data.rates.KRW : null;
+            if (!rate) {
+                throw new Error('환율 데이터 없음');
+            }
+            this.exchangeRate = rate;
+            this.saveExchangeRate(rate);
+            this.updateStats();
+            this.render();
+        } catch (error) {
+            console.warn('환율 업데이트 실패:', error);
+        }
+    }
+
+    startExchangeRatePolling() {
+        // 6시간마다 환율 갱신
+        setInterval(() => this.updateExchangeRate(), 6 * 60 * 60 * 1000);
     }
 
     // 새 구독 추가 또는 기존 구독 편집
