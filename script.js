@@ -280,6 +280,9 @@ class SubscriptionManager {
         // 구독 상태 확인
         const isExpired = endDate && new Date() > endDate;
         const isExpiringSoon = endDate && (endDate - new Date()) <= (30 * 24 * 60 * 60 * 1000) && !isExpired;
+        const nextBillingDate = this.getNextBillingDate(service);
+        const daysUntilBilling = nextBillingDate ? this.getDaysUntil(nextBillingDate) : null;
+        const ddayLabel = isExpired ? '만료' : (daysUntilBilling === 0 ? 'D-Day' : `D-${daysUntilBilling}`);
         
         // 원화로 변환된 가격 계산
         const monthlyPriceKRW = this.convertCurrency(monthlyPrice, currency, 'KRW');
@@ -307,9 +310,14 @@ class SubscriptionManager {
                         </div>
                         <span class="service-category category-${service.category}">${this.getCategoryName(service.category)}</span>
                     </div>
-                    <button class="details-toggle" type="button" aria-expanded="false" aria-label="상세 보기 토글">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
+                    <div class="service-header-actions">
+                        <span class="dday-badge ${isExpired ? 'expired' : (daysUntilBilling !== null && daysUntilBilling <= 3 ? 'soon' : '')}">
+                            ${ddayLabel}
+                        </span>
+                        <button class="details-toggle" type="button" aria-expanded="false" aria-label="상세 보기 토글">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="service-price">
@@ -367,6 +375,47 @@ class SubscriptionManager {
         `;
     }
 
+    // 다음 결제일 계산
+    getNextBillingDate(service) {
+        const startDate = new Date(service.startDate);
+        const endDate = service.endDate ? new Date(service.endDate) : null;
+        const today = this.normalizeDate(new Date());
+
+        if (endDate && today > this.normalizeDate(endDate)) {
+            return null;
+        }
+
+        const startDay = startDate.getDate();
+        if (service.billingCycle === 'yearly') {
+            const candidate = new Date(today.getFullYear(), startDate.getMonth(), startDay);
+            const normalized = this.normalizeDate(candidate);
+            if (normalized < today) {
+                return this.normalizeDate(new Date(today.getFullYear() + 1, startDate.getMonth(), startDay));
+            }
+            return normalized;
+        }
+
+        const candidate = new Date(today.getFullYear(), today.getMonth(), startDay);
+        const normalized = this.normalizeDate(candidate);
+        if (normalized < today) {
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, startDay);
+            return this.normalizeDate(nextMonth);
+        }
+        return normalized;
+    }
+
+    getDaysUntil(targetDate) {
+        const today = this.normalizeDate(new Date());
+        const target = this.normalizeDate(targetDate);
+        return Math.max(0, Math.ceil((target - today) / (1000 * 60 * 60 * 24)));
+    }
+
+    normalizeDate(date) {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    }
+
     // 상세영역 높이 동기화 (재렌더 시)
     syncDetailsHeights() {
         document.querySelectorAll('.service-card').forEach(card => {
@@ -411,7 +460,7 @@ class SubscriptionManager {
         const categoryFilter = document.getElementById('categoryFilter').value;
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         
-        return this.subscriptions.filter(service => {
+        const filtered = this.subscriptions.filter(service => {
             // 탭별 필터링
             const matchesTab = this.currentTab === 'all' || service.expenseType === this.currentTab;
             const matchesCategory = !categoryFilter || service.category === categoryFilter;
@@ -420,6 +469,16 @@ class SubscriptionManager {
                 (service.description && service.description.toLowerCase().includes(searchTerm));
             
             return matchesTab && matchesCategory && matchesSearch;
+        });
+
+        // 결제일 임박 순 정렬 (만료는 뒤로)
+        return filtered.sort((a, b) => {
+            const nextA = this.getNextBillingDate(a);
+            const nextB = this.getNextBillingDate(b);
+            if (!nextA && !nextB) return 0;
+            if (!nextA) return 1;
+            if (!nextB) return -1;
+            return nextA - nextB;
         });
     }
 

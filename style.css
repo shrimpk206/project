@@ -306,6 +306,12 @@ body::after {
     gap: 10px;
 }
 
+.service-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .service-name {
     font-size: 1.1rem;
     font-weight: 700;
@@ -354,6 +360,33 @@ body::after {
 .service-card.is-expanded .details-toggle {
     background: rgba(116, 183, 166, 0.16);
     border-color: rgba(116, 183, 166, 0.6);
+}
+
+.dday-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: rgba(246, 198, 107, 0.18);
+    border: 1px solid rgba(246, 198, 107, 0.4);
+    color: #ffe9c7;
+}
+
+.dday-badge.soon {
+    background: rgba(116, 183, 166, 0.18);
+    border-color: rgba(116, 183, 166, 0.5);
+    color: #d9f4ec;
+}
+
+.dday-badge.expired {
+    background: rgba(228, 104, 106, 0.2);
+    border-color: rgba(228, 104, 106, 0.5);
+    color: #ffd7d7;
 }
 
 .details-toggle i {
